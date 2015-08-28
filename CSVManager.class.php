@@ -74,28 +74,28 @@ class CSVManager {
     $this->data = array();
     $this->errors = array();
     if (($handle = fopen($filename, 'r')) !== false) {
-			$row = 0;
-			while (($line = fgetcsv($handle, 0, $this->delimiter)) !== false) {
-			  //get headers
-			  if ($row == 0) {
-			    $this->headers = array_map($this->sanitize, $line);
-			    if ($this->headerUseCamelCase) {
-			      $this->headers = array_map($this->underscroreToCamelCase, $line);
-			    }
-			  }
-				if (count($line) != count($this->headers)) {
-          $error = (object) array(
-            'line'          => $line,
-            'row'           => $row,
-            'type'          => self::ERROR_COLUMN_NUMBER,
-            'expected'      => count($this->headers),
-            'column_number' => count($line)
-          );
-          $this->setErrorMessage($error);
-          $this->errors[$row][] = $error;
-          //fatal error => return empty array.
-					return array();
-				}
+      $row = 0;
+      while (($line = fgetcsv($handle, 0, $this->delimiter)) !== false) {
+        //get headers
+        if ($row == 0) {
+          $this->headers = array_map($this->sanitize, $line);
+          if ($this->headerUseCamelCase) {
+            $this->headers = array_map($this->underscroreToCamelCase, $line);
+          }
+        }
+        if (count($line) != count($this->headers)) {
+              $error = (object) array(
+                'line'          => $line,
+                'row'           => $row,
+                'type'          => self::ERROR_COLUMN_NUMBER,
+                'expected'      => count($this->headers),
+                'column_number' => count($line)
+              );
+              $this->setErrorMessage($error);
+              $this->errors[$row][] = $error;
+              //fatal error => return empty array.
+          return array();
+        }
         if ($row > 0) {
           foreach ($line as $key => $value) {
             //si $value n'est pas vide et
@@ -126,8 +126,8 @@ class CSVManager {
           }
         }
         $row += 1;
-			}
-			fclose($handle);
+      }
+      fclose($handle);
     }
     return $this->data;
   }
