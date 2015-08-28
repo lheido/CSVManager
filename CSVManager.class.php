@@ -3,7 +3,7 @@ namespace CSVManager;
 
 /**
  * 
- * */
+ */
 class CSVManager {
   
   const ERROR_COLUMN_NUMBER    = 'Bad column number';
@@ -84,16 +84,16 @@ class CSVManager {
           }
         }
         if (count($line) != count($this->headers)) {
-              $error = (object) array(
-                'line'          => $line,
-                'row'           => $row,
-                'type'          => self::ERROR_COLUMN_NUMBER,
-                'expected'      => count($this->headers),
-                'column_number' => count($line)
-              );
-              $this->setErrorMessage($error);
-              $this->errors[$row][] = $error;
-              //fatal error => return empty array.
+          $error = (object) array(
+            'line'          => $line,
+            'row'           => $row,
+            'type'          => self::ERROR_COLUMN_NUMBER,
+            'expected'      => count($this->headers),
+            'column_number' => count($line)
+          );
+          $this->setErrorMessage($error);
+          $this->errors[$row][] = $error;
+          //fatal error => return empty array.
           return array();
         }
         if ($row > 0) {
