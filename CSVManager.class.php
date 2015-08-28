@@ -6,6 +6,9 @@ namespace CSVManager;
  * */
 class CSVManager {
   
+  const ERROR_COLUMN_NUMBER    = 'Bad column number';
+  const ERROR_FIELD_VALIDATION = 'Field validation failed';
+  
   protected $filePath;
   protected $validators;
   protected $errors;
@@ -13,9 +16,6 @@ class CSVManager {
   protected $headers;
   protected $delimiter;
   protected $headerUseCamelCase;
-  protected $errorNumberColumnMessage;
-  protected $errorValidationMessage;
-  protected $errorReplacementCallback;
   
   public function __construct($filePath) {
     $this->filePath = $filePath;
@@ -25,9 +25,6 @@ class CSVManager {
     $this->headers = array();
     $this->delimiter = ';';
     $this->headerUseCamelCase = true;
-    $this->errorNumberColumnMessage = "@expected columns expected but @column_number found.";
-    $this->errorValidationMessage = "Error column @column: '@value' is invalid";
-    $this->errorReplacementCallback = 'strtr';
   }
   
   public function getFilePath() {
@@ -42,18 +39,6 @@ class CSVManager {
     $this->headerUseCamelCase = $bool;
   }
   
-  public function setErrorReplacementCallback($callback) {
-    $this->errorReplacementCallback = $callback;
-  }
-  
-  public function setErrorNumberColumnMessage($str) {
-    $this->errorNumberColumnMessage = $str;
-  }
-  
-  public function setErrorValidationMessage($str) {
-    $this->errorValidationMessage = $str;
-  }
-  
   /**
    * @param validators array  (column => validator)
    *                          column must be match with csv column name or int
@@ -62,6 +47,27 @@ class CSVManager {
    * */
   public function setValidators(array $validators) {
     $this->validators = $validators;
+  }
+  
+  protected function setErrorMessage(stdClass &$error) {
+    switch ($error->type) {
+      case self::ERROR_COLUMN_NUMBER:
+        $error->message = strtr("@expected columns expected but @column_number found.", array(
+          '@expected'      => $error->expected,
+          '@column_number' => $error->column_number
+        ));
+        break;
+        
+      case self::ERROR_FIELD_VALIDATION:
+        $error->message = strtr("Error column @column: '@value' is invalid", array(
+          '@column' => $error->column,
+          '@value'  => $error->value
+        ));
+        break;
+        
+      default:
+        break;
+    }
   }
   
   public function extract() {
@@ -78,18 +84,17 @@ class CSVManager {
 			    }
 			  }
 				if (count($line) != count($this->headers)) {
-          $this->errors[$row][] = (object) array(
-            'line' => $line,
-            'row' => $row,
-            'error' => 'Bad Column number',
-            'message' => call_user_func($this->errorReplacementCallback, 
-              $this->errorNumberColumnMessage, array(
-                '@expected' => count($this->headers),
-                '@column_number' => count($line)
-              )
-            )
+          $error = (object) array(
+            'line'          => $line,
+            'row'           => $row,
+            'type'          => self::ERROR_COLUMN_NUMBER,
+            'expected'      => count($this->headers),
+            'column_number' => count($line)
           );
-					return false;
+          $this->setErrorMessage($error);
+          $this->errors[$row][] = $error;
+          //fatal error => return empty array.
+					return array();
 				}
         if ($row > 0) {
           foreach ($line as $key => $value) {
@@ -98,17 +103,15 @@ class CSVManager {
             if ($value && isset($this->validators[$key])) {
               $result = call_user_func($this->validators[$key], $value);
               if (!$result) {
-                $this->errors[$row][] = (object) array(
-                  'line' => $line,
-                  'row' => $row,
-                  'error' => 'Column validation failed',
-                  'message' => call_user_func($this->errorReplacementCallback, 
-                    $this->errorValidationMessage, array(
-                      '@column' => $key,
-                      '@value' => $value
-                    )
-                  )
+                $error = (object) array(
+                  'line'   => $line,
+                  'row'    => $row,
+                  'type'   => self::ERROR_FIELD_VALIDATION,
+                  'column' => $key,
+                  'value'  => $value
                 );
+                $this->setErrorMessage($error);
+                $this->errors[$row][] = $error;
               }
             }
           }
