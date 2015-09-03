@@ -43,7 +43,7 @@ class CSVManager {
    * @param validators array  (column => validator)
    *                          column must be match with csv column name or int
    *                          validator is a string or array (for POO), 
-   *                            ex: 'is_numeric' or ($this, 'method').
+   *                            ex: 'is_numeric' or array($this, 'method').
    * */
   public function setValidators(array $validators) {
     $this->validators = $validators;
@@ -91,7 +91,7 @@ class CSVManager {
             'expected'      => count($this->headers),
             'column_number' => count($line)
           );
-          $this->setErrorMessage($error);
+          // $this->setErrorMessage($error);
           $this->errors[$row][] = $error;
           //fatal error => return empty array.
           return array();
@@ -110,7 +110,7 @@ class CSVManager {
                   'column' => $key,
                   'value'  => $value
                 );
-                $this->setErrorMessage($error);
+                // $this->setErrorMessage($error);
                 $this->errors[$row][] = $error;
               }
             }
@@ -142,9 +142,35 @@ class CSVManager {
       $rules = "Any-Latin; NFD; [:Nonspacing Mark:] Remove; NFC; [:Punctuation:] Remove; Lower();";
       return str_replace(' ', $spaceReplacement, transliterator_transliterate($rules, $str));
     }
-    $search = array(' ','ï','î','É','é','È','è','Ê','ê','À','à','Ç','ç','Â','â','¬','@','&','ù','Ù','$','!','#',"'",'"');
-    $replace = array($spaceReplacement,'i','i','E','e','E','e','E','e','A','a','C','c','A','a','e','','','u','U','','','',"",'','');
-    return str_replace($search, $replace, $str);
+    $eur = chr(226).chr(130).chr(172);
+    $map = array(
+      ' '   => $spaceReplacement,
+      'ï'   => 'i',
+      'î'   => 'i',
+      'É'   => 'E',
+      'é'   => 'e',
+      'È'   => 'E',
+      'è'   => 'e',
+      'Ê'   => 'E',
+      'ê'   => 'e',
+      'À'   => 'A',
+      'à'   => 'a',
+      'Ç'   => 'C',
+      'ç'   => 'c',
+      'Â'   => 'A',
+      'â'   => 'a',
+      $eur  => 'EUR',
+      '@'   => 'at',
+      '&'   => '',
+      'ù'   => 'u',
+      'Ù'   => 'U',
+      '$'   => '',
+      '!'   => '',
+      '#'   => '',
+      "'"   => '',
+      '"'   => ''
+    );
+    return strtolower(str_replace(array_keys($map), array_values($map), $str));
   }
   
   public static function underscroreToCamelCase($str) {
