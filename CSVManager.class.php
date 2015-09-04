@@ -1,5 +1,4 @@
 <?php
-namespace CSVManager;
 
 /**
  * 
@@ -49,7 +48,7 @@ class CSVManager {
     $this->validators = $validators;
   }
   
-  protected function setErrorMessage(stdClass &$error) {
+  public function setErrorMessage(stdClass &$error) {
     switch ($error->type) {
       case self::ERROR_COLUMN_NUMBER:
         $error->message = strtr("@expected columns expected but @column_number found.", array(
