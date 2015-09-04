@@ -89,9 +89,8 @@ class CSVManager {
             'row'           => $row,
             'type'          => self::ERROR_COLUMN_NUMBER,
             'expected'      => count($this->headers),
-            'column_number' => count($line)
+            'columnNumber' => count($line)
           );
-          // $this->setErrorMessage($error);
           $this->errors[$row][] = $error;
           //fatal error => return empty array.
           return array();
@@ -104,26 +103,20 @@ class CSVManager {
               $result = call_user_func($this->validators[$key], $value);
               if (!$result) {
                 $error = (object) array(
-                  'line'   => $line,
-                  'row'    => $row,
                   'type'   => self::ERROR_FIELD_VALIDATION,
-                  'column' => $key,
+                  'column' => $this->headers[$key],
                   'value'  => $value
                 );
-                // $this->setErrorMessage($error);
                 $this->errors[$row][] = $error;
               }
             }
           }
-          //if errors[row] don't exist then data[row] <- line.
-          //if count(headers) > 0 then line -> stdClass
-          if (!isset($this->errors[$row])) {
-            $data = array_map('trim', $line);
-            if (count($this->headers) > 0) {
-              $data = (object) array_combine($this->headers, $data);
-            }
-            $this->data[$row] = $data;
+          $data = array_map('trim', $line);
+          if (count($this->headers) > 0) {
+            $data = (object) array_combine($this->headers, $data);
           }
+          $csvLine = new CSVLine($data, $this->errors[$row]);
+          $this->data[$row] = $csvLine;
         }
         $row += 1;
       }
@@ -177,4 +170,19 @@ class CSVManager {
     return preg_replace_callback("/_(.)/", function($c) {return strtoupper($c[1]);}, $str);
   }
   
+}
+
+class CSVLine {
+  
+  public $data;
+  public $errors;
+  
+  public function __construct($data, $errors = array()) {
+    $this->data = $data;
+    $this->errors = $errors;
+  }
+  
+  public function isValid() {
+    return empty($this->errors);
+  }
 }
