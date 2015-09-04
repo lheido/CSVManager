@@ -9,8 +9,8 @@ class CSVManagerTest extends PHPUnit_Framework_TestCase {
   }
   
   public function testSanitizeOk() {
-    $input  = "Région perdue de France¬";
-    $output = "region_perdue_de_franceEUR";
+    $input  = "Région perdue de France àéîôêç,;?~:{}=+-*/%$[]()<>«»'\"";
+    $output = "region_perdue_de_france_aeioec";
     $this->AssertEquals($output, CSVManager::sanitize($input));
   }
   

@@ -125,44 +125,22 @@ class CSVManager {
   }
   
   /**
-   * Replace space by underscore (default).
-   * Transliterate $str if transliterator_transliterate function exist.
+   * Slugify and replace space by underscore (default).
+   * @from http://stackoverflow.com/questions/2955251/php-function-to-make-slug-url-string
    * @return string
    * */
   public static function sanitize($str, $spaceReplacement='_') {
-    if (function_exists('transliterator_transliterate')) {
-      $rules = "Any-Latin; NFD; [:Nonspacing Mark:] Remove; NFC; [:Punctuation:] Remove; Lower();";
-      return str_replace(' ', $spaceReplacement, transliterator_transliterate($rules, $str));
-    }
-    $eur = chr(226).chr(130).chr(172);
-    $map = array(
-      ' '   => $spaceReplacement,
-      'ï'   => 'i',
-      'î'   => 'i',
-      'É'   => 'E',
-      'é'   => 'e',
-      'È'   => 'E',
-      'è'   => 'e',
-      'Ê'   => 'E',
-      'ê'   => 'e',
-      'À'   => 'A',
-      'à'   => 'a',
-      'Ç'   => 'C',
-      'ç'   => 'c',
-      'Â'   => 'A',
-      'â'   => 'a',
-      $eur  => 'EUR',
-      '@'   => 'at',
-      '&'   => '',
-      'ù'   => 'u',
-      'Ù'   => 'U',
-      '$'   => '',
-      '!'   => '',
-      '#'   => '',
-      "'"   => '',
-      '"'   => ''
-    );
-    return strtolower(str_replace(array_keys($map), array_values($map), $str));
+    // replace non letter or digits by -
+    $text = preg_replace('~[^\\pL\d]+~u', $spaceReplacement, $str);
+    // trim
+    $text = trim($text, $spaceReplacement);
+    // transliterate
+    $text = iconv('utf-8', 'us-ascii//TRANSLIT', $text);
+    // lowercase
+    $text = strtolower($text);
+    // remove unwanted characters
+    $text = preg_replace('~[^-\w]+~', '', $text);
+    return $text;
   }
   
   public static function underscroreToCamelCase($str) {
