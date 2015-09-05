@@ -140,11 +140,13 @@ class CSVManager {
     $text = strtolower($text);
     // remove unwanted characters
     $text = preg_replace('~[^-\w]+~', '', $text);
+    // add $spaceReplacement at the beginning chain if it starts with a number.
+    $text = preg_replace('~^([0-9])~', $spaceReplacement.'${1}', $text);
     return $text;
   }
   
   public static function underscroreToCamelCase($str) {
-    return preg_replace_callback("/_(.)/", function($c) {return strtoupper($c[1]);}, $str);
+    return preg_replace_callback("/(\w{1})_(.)/", function($c) {return $c[1].strtoupper($c[2]);}, $str);
   }
   
 }
