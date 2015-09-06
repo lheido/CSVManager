@@ -34,6 +34,22 @@ class CSVManager {
     $this->filePath = $filePath;
   }
   
+  public function getDelimiter() {
+    return $this->delimiter;
+  }
+  
+  public function setDelimiter($delimiter) {
+    $this->delimiter = $delimiter;
+  }
+  
+  public function getErrors() {
+    return $this->errors;
+  }
+  
+  public function getHeaders() {
+    return $this->headers;
+  }
+  
   public function headerUseCamelCase($bool) {
     $this->headerUseCamelCase = $bool;
   }
@@ -43,9 +59,13 @@ class CSVManager {
    *                          column must be match with csv column name or int
    *                          validator is a string or array (for POO), 
    *                            ex: 'is_numeric' or array($this, 'method').
-   * */
+   */
   public function setValidators(array $validators) {
     $this->validators = $validators;
+  }
+  
+  public function getValidators() {
+    return $this->validators;
   }
   
   public function setErrorMessage(stdClass &$error) {
@@ -72,14 +92,14 @@ class CSVManager {
   public function extract() {
     $this->data = array();
     $this->errors = array();
-    if (($handle = fopen($filename, 'r')) !== false) {
+    if (($handle = fopen($this->filePath, 'r')) !== false) {
       $row = 0;
       while (($line = fgetcsv($handle, 0, $this->delimiter)) !== false) {
         //get headers
         if ($row == 0) {
-          $this->headers = array_map($this->sanitize, $line);
+          $this->headers = array_map(array(get_called_class(), 'sanitize'), $line);
           if ($this->headerUseCamelCase) {
-            $this->headers = array_map($this->underscroreToCamelCase, $line);
+            $this->headers = array_map(array(get_called_class(), 'underscroreToCamelCase'), $line);
           }
         }
         if (count($line) != count($this->headers)) {
@@ -95,6 +115,7 @@ class CSVManager {
           return array();
         }
         if ($row > 0) {
+          $errors = array();
           foreach ($line as $key => $value) {
             //si $value n'est pas vide et
             //si il y a une fonction de validation prévue pour cette colonne
@@ -106,7 +127,7 @@ class CSVManager {
                   'column' => $this->headers[$key],
                   'value'  => $value
                 );
-                $this->errors[$row][] = $error;
+                $errors[] = $error;
               }
             }
           }
@@ -114,8 +135,12 @@ class CSVManager {
           if (count($this->headers) > 0) {
             $data = (object) array_combine($this->headers, $data);
           }
-          $csvLine = new CSVLine($data, $this->errors[$row]);
+          $csvLine = new CSVLine($data, $errors);
+          
           $this->data[$row] = $csvLine;
+          if (!empty($errors)) {
+            $this->errors[$row] = $errors;
+          }
         }
         $row += 1;
       }

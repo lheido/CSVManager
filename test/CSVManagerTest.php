@@ -20,8 +20,13 @@ class CSVManagerTest extends PHPUnit_Framework_TestCase {
     $this->AssertEquals($output, CSVManager::underscroreToCamelCase($input));
   }
   
-  function testExtracNoErrors() {
+  function testExtrac99kNoErrors() {
+    $file = 'test99999line.csv';
+    $csvManager = new CSVManager($file);
     
+    $data = $csvManager->extract();
+    $errors = $csvManager->getErrors();
+    $this->AssertEquals(array(), $errors);
   }
   
 }
