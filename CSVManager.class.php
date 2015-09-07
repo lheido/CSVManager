@@ -179,14 +179,36 @@ class CSVManager {
 class CSVLine {
   
   public $data;
+  public $dataIsArray;
   public $errors;
   
   public function __construct($data, $errors = array()) {
     $this->data = $data;
+    $this->dataIsArray = is_array($this->data);
     $this->errors = $errors;
   }
   
   public function isValid() {
     return empty($this->errors);
+  }
+  
+  public function __get($name) {
+    return $this->dataIsArray ? $this->data[$name] : $this->data->{"$name"};
+  }
+  
+  public function __isset($name) {
+    if ($this->dataIsArray) {
+      return isset($this->data[$name]);
+    }
+    return isset($this->data->{"$name"});
+  }
+  
+  public function __unset($name) {
+    if ($this->dataIsArray) {
+      unset($this->data[$name]);
+    } 
+    else {
+      unset($this->data->{"$name"});
+    }
   }
 }

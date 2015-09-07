@@ -4,8 +4,13 @@
  */
 class CSVManagerTest extends PHPUnit_Framework_TestCase {
   
+  public $file;
+  public $csvManager;
+  
   public function setUp(){
     require_once "../CSVManager.class.php";
+    $this->file = 'test99999line.csv';
+    $this->csvManager = new CSVManager($this->file);
   }
   
   public function testSanitize() {
@@ -21,12 +26,24 @@ class CSVManagerTest extends PHPUnit_Framework_TestCase {
   }
   
   function testExtrac99kNoErrors() {
-    $file = 'test99999line.csv';
-    $csvManager = new CSVManager($file);
-    
-    $data = $csvManager->extract();
-    $errors = $csvManager->getErrors();
-    $this->AssertEquals(array(), $errors);
+    // $data = $this->csvManager->extract();
+    // $errors = $this->csvManager->getErrors();
+    // $this->AssertEquals(array(), $errors);
+  }
+  
+  function testCSVLineGetterOkWithDataAttributes() {
+    $data = $this->csvManager->extract();
+    for ($i = 1; $i < 4; $i++) {
+      print_r("--------------"."\n");
+      print_r($data[$i]->guid."\n");
+      print_r($data[$i]->first."\n");
+      print_r($data[$i]->last."\n");
+      print_r($data[$i]->email."\n");
+      print_r($data[$i]->phone."\n");
+      print_r($data[$i]->state."\n");
+      print_r($data[$i]->sentence."\n");
+      print_r("--------------"."\n");
+    }
   }
   
 }
