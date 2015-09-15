@@ -26,9 +26,9 @@ class CSVManagerTest extends PHPUnit_Framework_TestCase {
   }
   
   function testExtrac99kNoErrors() {
-    // $data = $this->csvManager->extract();
-    // $errors = $this->csvManager->getErrors();
-    // $this->AssertEquals(array(), $errors);
+    $data = $this->csvManager->extract();
+    $errors = $this->csvManager->getErrors();
+    $this->AssertEquals(array(), $errors);
   }
   
   function testCSVLineGetterOkWithDataAttributes() {

@@ -137,7 +137,7 @@ class CSVManager {
           }
           $csvLine = new CSVLine($data, $errors);
           
-          $this->addLine($csvLine);
+          $this->onAddLine($csvLine, $row);
         }
         $row += 1;
       }
@@ -146,9 +146,9 @@ class CSVManager {
     return $this->data;
   }
   
-  public function addLine(CSVLine $line) {
-    $this->data[$row] = $csvLine;
-    if (!empty($errors)) {
+  public function onAddLine(CSVLine $line, $row) {
+    $this->data[$row] = $line;
+    if (!$line->isValid()) {
       $this->errors[$row] = $line->errors;
     }
   }
