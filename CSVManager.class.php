@@ -137,16 +137,20 @@ class CSVManager {
           }
           $csvLine = new CSVLine($data, $errors);
           
-          $this->data[$row] = $csvLine;
-          if (!empty($errors)) {
-            $this->errors[$row] = $errors;
-          }
+          $this->addLine($csvLine);
         }
         $row += 1;
       }
       fclose($handle);
     }
     return $this->data;
+  }
+  
+  public function addLine(CSVLine $line) {
+    $this->data[$row] = $csvLine;
+    if (!empty($errors)) {
+      $this->errors[$row] = $line->errors;
+    }
   }
   
   /**
