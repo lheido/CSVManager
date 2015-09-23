@@ -89,7 +89,7 @@ class CSVManager {
     }
   }
   
-  public function extract() {
+  public function extract(Callable $callback=null) {
     $this->data = array();
     $this->errors = array();
     if (($handle = fopen($this->filePath, 'r')) !== false) {
@@ -102,24 +102,20 @@ class CSVManager {
             $this->headers = array_map(array(get_called_class(), 'underscroreToCamelCase'), $line);
           }
         }
-        if (count($line) != count($this->headers)) {
-          $error = (object) array(
-            'line'          => $line,
-            'row'           => $row,
-            'type'          => self::ERROR_COLUMN_NUMBER,
-            'expected'      => count($this->headers),
-            'columnNumber' => count($line)
-          );
-          $this->errors[$row][] = $error;
-          //fatal error => return empty array.
-          return array();
-        }
         if ($row > 0) {
           $errors = array();
+          // check column number
+          if (count($line) != count($this->headers)) {
+            $error = (object) array(
+              'type'          => self::ERROR_COLUMN_NUMBER,
+              'expected'      => count($this->headers),
+              'columnNumber' => count($line)
+            );
+            $errors[] = $error;
+          }
+          //check each fields
           foreach ($line as $key => $value) {
-            //si $value n'est pas vide et
-            //si il y a une fonction de validation prévue pour cette colonne
-            if ($value && isset($this->validators[$key])) {
+            if (isset($this->validators[$key])) {
               $result = call_user_func($this->validators[$key], $value);
               if (!$result) {
                 $error = (object) array(
@@ -132,12 +128,12 @@ class CSVManager {
             }
           }
           $data = array_map('trim', $line);
-          if (count($this->headers) > 0) {
-            $data = (object) array_combine($this->headers, $data);
+          $data = array_combine($this->headers, $data);
+          $csvLine = new CSVLine($row, $data, $errors);
+          if ($callback == null) {
+            $callback = array($this, 'onAddLine');
           }
-          $csvLine = new CSVLine($data, $errors);
-          
-          $this->onAddLine($csvLine, $row);
+          call_user_func($callback, $csvLine, $row);
         }
         $row += 1;
       }
@@ -146,7 +142,7 @@ class CSVManager {
     return $this->data;
   }
   
-  public function onAddLine(CSVLine $line, $row) {
+  private function onAddLine(CSVLine $line, $row) {
     $this->data[$row] = $line;
     if (!$line->isValid()) {
       $this->errors[$row] = $line->errors;
@@ -182,13 +178,13 @@ class CSVManager {
 
 class CSVLine {
   
+  public $row;
   public $data;
-  public $dataIsArray;
   public $errors;
   
-  public function __construct($data, $errors = array()) {
+  public function __construct($row, $data, $errors = array()) {
+    $this->row = $row;
     $this->data = $data;
-    $this->dataIsArray = is_array($this->data);
     $this->errors = $errors;
   }
   
@@ -196,23 +192,19 @@ class CSVLine {
     return empty($this->errors);
   }
   
+  public function getRow() {
+    return $this->row;
+  }
+  
   public function __get($name) {
-    return $this->dataIsArray ? $this->data[$name] : $this->data->{"$name"};
+    return $this->data[$name];
   }
   
   public function __isset($name) {
-    if ($this->dataIsArray) {
-      return isset($this->data[$name]);
-    }
-    return isset($this->data->{"$name"});
+    return isset($this->data[$name]);
   }
   
   public function __unset($name) {
-    if ($this->dataIsArray) {
-      unset($this->data[$name]);
-    } 
-    else {
-      unset($this->data->{"$name"});
-    }
+    unset($this->data[$name]);
   }
 }

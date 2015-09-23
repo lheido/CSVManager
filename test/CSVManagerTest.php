@@ -25,25 +25,55 @@ class CSVManagerTest extends PHPUnit_Framework_TestCase {
     $this->AssertEquals($output, CSVManager::underscroreToCamelCase($input));
   }
   
-  function testExtrac99kNoErrors() {
+  function testExtrac99kNoErrorsNoCallback() {
     $data = $this->csvManager->extract();
     $errors = $this->csvManager->getErrors();
     $this->AssertEquals(array(), $errors);
   }
   
+  function testExtractWithCallback() {
+    $count = 0;
+    $this->csvManager->extract(function($line, $row) use (&$count){
+      $count += 1;
+    });
+    $this->AssertEquals(99999, $count);
+  }
+  
   function testCSVLineGetterOkWithDataAttributes() {
+    $ok = true;
     $data = $this->csvManager->extract();
     for ($i = 1; $i < 4; $i++) {
-      print_r("--------------"."\n");
-      print_r($data[$i]->guid."\n");
-      print_r($data[$i]->first."\n");
-      print_r($data[$i]->last."\n");
-      print_r($data[$i]->email."\n");
-      print_r($data[$i]->phone."\n");
-      print_r($data[$i]->state."\n");
-      print_r($data[$i]->sentence."\n");
-      print_r("--------------"."\n");
+      try {
+        $guid = $data[$i]->guid;
+        $first = $data[$i]->first;
+        $last = $data[$i]->last;
+        $email = $data[$i]->email;
+        $phone = $data[$i]->phone;
+        $state = $data[$i]->state;
+        $sentence = $data[$i]->sentence;
+      } catch (Exception $e) {
+        $ok = false;
+      }
     }
+    $this->AssertEquals(true, $ok);
+  }
+  
+  function testCSVLineGetterOkWithRowAttributes() {
+    $this->csvManager->extract(function($line, $row) use (&$ok) {
+      if ($row == 1) {
+        $r = $line->row;
+        $this->AssertEquals($row, $r);
+      }
+    });
+  }
+  
+  function testCSVLineGetterOkWithErrorsAttributes() {
+    $this->csvManager->extract(function($line, $row) use (&$ok) {
+      if ($row == 1) {
+        $e = $line->errors;
+        $this->AssertEquals(array(), $e);
+      }
+    });
   }
   
 }
