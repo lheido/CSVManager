@@ -49,7 +49,7 @@ class CSVManagerTest extends PHPUnit_Framework_TestCase {
         $last = $data[$i]->last;
         $email = $data[$i]->email;
         $phone = $data[$i]->phone;
-        $state = $data[$i]->state;
+        $state = $data[$i]->data['useless state'];
         $sentence = $data[$i]->sentence;
       } catch (Exception $e) {
         $ok = false;
@@ -58,7 +58,7 @@ class CSVManagerTest extends PHPUnit_Framework_TestCase {
     $this->AssertEquals(true, $ok);
   }
   
-  function testCSVLineGetterOkWithRowAttributes() {
+  function testCSVLineGetterOkWithRowAttribute() {
     $this->csvManager->extract(function($line, $row) use (&$ok) {
       if ($row == 1) {
         $r = $line->row;
@@ -67,7 +67,7 @@ class CSVManagerTest extends PHPUnit_Framework_TestCase {
     });
   }
   
-  function testCSVLineGetterOkWithErrorsAttributes() {
+  function testCSVLineGetterOkWithErrorsAttribute() {
     $this->csvManager->extract(function($line, $row) use (&$ok) {
       if ($row == 1) {
         $e = $line->errors;

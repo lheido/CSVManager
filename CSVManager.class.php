@@ -97,18 +97,21 @@ class CSVManager {
       while (($line = fgetcsv($handle, 0, $this->delimiter)) !== false) {
         //get headers
         if ($row == 0) {
-          $this->headers = array_map(array(get_called_class(), 'sanitize'), $line);
+          $this->header = $line;
+          // create header mapping
+          $this->headerMap = array_map(array('CSVManager', 'sanitize'), $this->header);
           if ($this->headerUseCamelCase) {
-            $this->headers = array_map(array(get_called_class(), 'underscroreToCamelCase'), $line);
+            $this->headerMap = array_map(array('CSVManager', 'underscroreToCamelCase'), $this->headerMap);
           }
+          $this->headerMap = array_combine($this->headerMap, $this->header);
         }
         if ($row > 0) {
           $errors = array();
           // check column number
-          if (count($line) != count($this->headers)) {
+          if (count($line) != count($this->header)) {
             $error = (object) array(
               'type'          => self::ERROR_COLUMN_NUMBER,
-              'expected'      => count($this->headers),
+              'expected'      => count($this->header),
               'columnNumber' => count($line)
             );
             $errors[] = $error;
@@ -120,7 +123,7 @@ class CSVManager {
               if (!$result) {
                 $error = (object) array(
                   'type'   => self::ERROR_FIELD_VALIDATION,
-                  'column' => $this->headers[$key],
+                  'column' => $this->header[$key],
                   'value'  => $value
                 );
                 $errors[] = $error;
@@ -128,8 +131,8 @@ class CSVManager {
             }
           }
           $data = array_map('trim', $line);
-          $data = array_combine($this->headers, $data);
-          $csvLine = new CSVLine($row, $data, $errors);
+          $data = array_combine($this->header, $data);
+          $csvLine = new CSVLine($row, $data, $this->headerMap, $errors);
           if ($callback == null) {
             $callback = array($this, 'onAddLine');
           }
@@ -181,11 +184,13 @@ class CSVLine {
   public $row;
   public $data;
   public $errors;
+  public $headerMap;
   
-  public function __construct($row, $data, $errors = array()) {
+  public function __construct($row, $data, $headerMap, $errors = array()) {
     $this->row = $row;
     $this->data = $data;
     $this->errors = $errors;
+    $this->headerMap = $headerMap;
   }
   
   public function isValid() {
@@ -197,14 +202,14 @@ class CSVLine {
   }
   
   public function __get($name) {
-    return $this->data[$name];
+    return $this->data[$this->headerMap[$name]];
   }
   
   public function __isset($name) {
-    return isset($this->data[$name]);
+    return isset($this->data[$this->headerMap[$name]]);
   }
   
   public function __unset($name) {
-    unset($this->data[$name]);
+    unset($this->data[$this->headerMap[$name]]);
   }
 }
