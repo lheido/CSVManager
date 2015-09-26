@@ -39,6 +39,16 @@ class CSVManagerTest extends PHPUnit_Framework_TestCase {
     $this->AssertEquals(99999, $count);
   }
   
+  function testExtractWithCallbackNoAnonymous() {
+    $this->csvManager->extract(array($this, 'extractCallbackTest'));
+  }
+  
+  function extractCallbackTest($line, $row) {
+    if ($row == 1) {
+      $this->AssertEquals($row, $line->row);
+    }
+  }
+  
   function testCSVLineGetterOkWithDataAttributes() {
     $ok = true;
     $data = $this->csvManager->extract();

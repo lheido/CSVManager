@@ -145,7 +145,7 @@ class CSVManager {
     return $this->data;
   }
   
-  private function onAddLine(CSVLine $line, $row) {
+  public function onAddLine(CSVLine $line, $row) {
     $this->data[$row] = $line;
     if (!$line->isValid()) {
       $this->errors[$row] = $line->errors;

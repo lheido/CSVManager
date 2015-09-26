@@ -29,3 +29,19 @@ foreach ($lines as $line) {
 }
 ```
 
+### extract callback
+
+If you don't care about save each lines in a php array, you can use a callback function.
+
+```php
+// with anonymous function:
+$cm->extract(function($line, $row) {
+  // do something...
+});
+
+// or with defined function:
+$cm->extract('my_callback_function');
+
+// or in POO way
+$cm->extract(array($object, 'my_callback_method'));
+```
