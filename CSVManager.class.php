@@ -5,8 +5,8 @@
  */
 class CSVManager {
   
-  const ERROR_COLUMN_NUMBER    = 'Bad column number';
-  const ERROR_FIELD_VALIDATION = 'Field validation failed';
+  const ERROR_COLUMN_NUMBER    = 'bad column number';
+  const ERROR_FIELD_VALIDATION = 'field validation failed';
   
   protected $filePath;
   protected $validators;
@@ -66,27 +66,6 @@ class CSVManager {
   
   public function getValidators() {
     return $this->validators;
-  }
-  
-  public function setErrorMessage(stdClass &$error) {
-    switch ($error->type) {
-      case self::ERROR_COLUMN_NUMBER:
-        $error->message = strtr("@expected columns expected but @column_number found.", array(
-          '@expected'      => $error->expected,
-          '@column_number' => $error->column_number
-        ));
-        break;
-        
-      case self::ERROR_FIELD_VALIDATION:
-        $error->message = strtr("Error column @column: '@value' is invalid", array(
-          '@column' => $error->column,
-          '@value'  => $error->value
-        ));
-        break;
-        
-      default:
-        break;
-    }
   }
   
   public function extract(Callable $callback=null) {
