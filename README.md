@@ -26,6 +26,29 @@ foreach ($lines as $line) {
     // or
     $field = $line->data['foo useless field'];
   }
+  else {
+    $errors = $line->errors;
+    foreach ($errors as $error) {
+      switch ($error->type) {
+        case CSVManager::ERROR_COLUMN_NUMBER:
+          $error->message = strtr("@expected columns expected but @column_number found.", array(
+            '@expected'      => $error->expected,
+            '@column_number' => $error->column_number
+          ));
+          break;
+          
+        case CSVManager::ERROR_FIELD_VALIDATION:
+          $error->message = strtr("Error column @column: '@value' is invalid", array(
+            '@column' => $error->column,
+            '@value'  => $error->value
+          ));
+          break;
+          
+        default:
+          break;
+      }
+    }
+  }
 }
 ```
 
