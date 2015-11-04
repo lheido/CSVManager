@@ -87,7 +87,9 @@ class CSVManager {
         if ($row > 0) {
           $errors = array();
           // check column number
+          $bad_column_number = false;
           if (count($line) != count($this->header)) {
+            $bad_column_number = true;
             $error = (object) array(
               'type'          => self::ERROR_COLUMN_NUMBER,
               'expected'      => count($this->header),
@@ -110,7 +112,9 @@ class CSVManager {
             }
           }
           $data = array_map('trim', $line);
-          $data = array_combine($this->header, $data);
+          if ($bad_column_number == false) {
+            $data = array_combine($this->header, $data);
+          }
           $csvLine = new CSVLine($row, $data, $this->headerMap, $errors);
           if ($callback == null) {
             $callback = array($this, 'onAddLine');
