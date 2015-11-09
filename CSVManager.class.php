@@ -138,9 +138,9 @@ class CSVManager {
   /**
    * convert string to utf8.
    */
-  public function toUtf8($content) {
+  public function toUtf8($content, $baseEncoding = 'ISO-8859-1') {
     if (!empty($content) && !mb_detect_encoding($content, 'UTF-8', true)) {
-			return utf8_encode($content);
+			return iconv($baseEncoding, 'UTF-8', $content);
 		}
 		return $content;
   }
