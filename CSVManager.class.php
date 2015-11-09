@@ -136,6 +136,16 @@ class CSVManager {
   }
   
   /**
+   * convert string to utf8.
+   */
+  public function toUtf8($content) {
+    if (!empty($content) && !mb_detect_encoding($content, 'UTF-8', true)) {
+			return utf8_encode($content);
+		}
+		return $content;
+  }
+  
+  /**
    * Slugify and replace space by underscore (default).
    * @from http://stackoverflow.com/questions/2955251/php-function-to-make-slug-url-string
    * @return string
