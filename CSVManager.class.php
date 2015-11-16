@@ -15,8 +15,9 @@ class CSVManager {
   protected $headers;
   protected $delimiter;
   protected $headerUseCamelCase;
+  protected $inputEncoding;
   
-  public function __construct($filePath) {
+  public function __construct($filePath, $encoding='UTF-8') {
     $this->filePath = $filePath;
     $this->validators = array();
     $this->errors = array();
@@ -24,6 +25,11 @@ class CSVManager {
     $this->headers = array();
     $this->delimiter = ';';
     $this->headerUseCamelCase = true;
+    $this->inputEncoding = $encoding;
+  }
+  
+  public function setInputEncoding($encoding) {
+    $this->inputEncoding = $encoding;
   }
   
   public function getFilePath() {
@@ -138,11 +144,12 @@ class CSVManager {
   /**
    * convert string to utf8.
    */
-  public function toUtf8($content, $baseEncoding = 'ISO-8859-1') {
+  public function toUtf8($content, $baseEncoding = null) {
+    $encoding = (empty($baseEncoding)) ? $this->inputEncoding : $baseEncoding;
     if (!empty($content) && !mb_detect_encoding($content, 'UTF-8', true)) {
-			return iconv($baseEncoding, 'UTF-8', $content);
-		}
-		return $content;
+      return iconv($encoding, 'UTF-8', $content);
+    }
+    return $content;
   }
   
   /**
