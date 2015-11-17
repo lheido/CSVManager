@@ -13,6 +13,12 @@ class CSVManagerTest extends PHPUnit_Framework_TestCase {
     $this->csvManager = new CSVManager($this->file);
   }
   
+  public function testToUtf8() {
+    $input  = iconv('UTF-8','ISO-8859-1',"42 Région ,;?~:{}=+-*/%$[]()<>«»'\" de France àéîôêç");
+    $output = "42 Région ,;?~:{}=+-*/%$[]()<>«»'\" de France àéîôêç";
+    $this->AssertEquals($output, CSVManager::toUtf8($input, 'ISO-8859-1'));
+  }
+  
   public function testSanitize() {
     $input  = "42 Région ,;?~:{}=+-*/%$[]()<>«»'\" de France àéîôêç";
     $output = "_42_region_de_france_aeioec";
